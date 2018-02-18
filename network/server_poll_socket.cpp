@@ -1,4 +1,4 @@
-#include "poll_server_socket.hpp"
+#include "server_poll_socket.hpp"
 
 #include <system_error>
 #include <cstring>
@@ -64,7 +64,7 @@ void ServerPollSocket::AcceptConnection() {
   }
   clients_.insert(client_fd);
   poll_array_.Insert(client_fd, POLLIN);
-  delegate_->ClientConnected(client_fd);
+  delegate_->ClientConnected(client_fd, client_info);
 }
 
 ServerPollSocket::~ServerPollSocket() {

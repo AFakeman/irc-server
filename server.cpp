@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include <arpa/inet.h>
 #include <unistd.h>
 
 #include "base/error.hpp"
@@ -31,8 +32,8 @@ void Server::ProcessClientEvents(const struct pollfd &fd) {
   }
 }
 
-void Server::ClientConnected(int fd) {
-  std::cout << "Client connected: " << fd << std::endl;
+void Server::ClientConnected(int fd, const sockaddr_in& info) {
+  std::cout << "Client connected: " << inet_ntoa(info.sin_addr) << std::endl;
 }
 
 void Server::ClientDisconnected(int fd) {

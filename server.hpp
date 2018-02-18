@@ -2,10 +2,10 @@
 
 #include <memory>
 
-#include "poll_server_socket.hpp"
-#include "server_poll_socket_delegate.hpp"
+#include "network/server_poll_socket.hpp"
+#include "network/server_poll_socket_delegate.hpp"
 
-class Server : public ServerPollSocketDelegate {
+class Server : public network::ServerPollSocketDelegate {
  public:
   Server();
 
@@ -13,12 +13,12 @@ class Server : public ServerPollSocketDelegate {
 
   // ServerPollSocketDelegate:
   void ProcessClientEvents(const struct pollfd &fd);
-  void ClientConnected(int fd);
+  void ClientConnected(int fd, const sockaddr_in& info);
   void ClientDisconnected(int fd);
  
   void Run();
  private:
   static const size_t kBufferSize_ = 512;
-  ServerPollSocket socket_;  
+  network::ServerPollSocket socket_;  
   std::unique_ptr<unsigned char[]> buffer_;
 };
