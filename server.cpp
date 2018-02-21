@@ -1,17 +1,12 @@
 #include "server.hpp"
 
+#include <cassert>
 #include <iostream>
 
 #include <arpa/inet.h>
-#include <unistd.h>
-
-#include "base/error.hpp"
 
 Server::Server()
-  : socket_(8080, 1, this) ,
-    buffer_(new unsigned char[kBufferSize_ + 1]) {
-    buffer_[kBufferSize_] = '\0';
-}
+  : socket_(8080, 1, this) {}
 
 Server::~Server() = default;
 
@@ -21,21 +16,35 @@ void Server::Run() {
   }
 }
 
-void Server::ProcessClientEvents(const struct pollfd &fd) {
-  if (fd.revents & POLLIN) {
-    ssize_t read_bytes = read(fd.fd, buffer_.get(), kBufferSize_);
-    if (read_bytes < 0) {
-      throw base::ErrnoExcept();
+void Server::ProcessClientEvents(network::ServerPollSocket::client_id client, short flags) {
+  if (flags & POLLIN) {
+    std::string str;
+    std::streambuf* buffer = socket_.GetClientBuffer(client);
+    {
+      std::istream istream(buffer); 
+      while(str.size() < 2 || str[str.size() - 2] != '\r') {
+        std::string tmpstr;
+        std::getline(istream, tmpstr, '\n');
+        if (tmpstr.empty()) {
+          str += "<EOF>"; 
+          break;
+        }
+        str += tmpstr;
+        str += '\n';
+      }
     }
-    buffer_[read_bytes] = '\0';
-    std::cout << buffer_.get() << std::endl;
+    std::cout << str << std::endl;
+    {
+      std::ostream ostream(buffer);
+      ostream << str << std::endl;
+    }
   }
 }
 
-void Server::ClientConnected(int fd, const sockaddr_in& info) {
+void Server::ClientConnected(network::ServerPollSocket::client_id client, const sockaddr_in& info) {
   std::cout << "Client connected: " << inet_ntoa(info.sin_addr) << std::endl;
 }
 
-void Server::ClientDisconnected(int fd) {
-  std::cout << "Client disconnected: " << fd << std::endl;
+void Server::ClientDisconnected(network::ServerPollSocket::client_id client) {
+  std::cout << "Client disconnected: " << client << std::endl;
 }

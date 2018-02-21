@@ -6,6 +6,7 @@
 #include <poll.h>
 
 namespace network {
+// Higher-level wrapper over |poll| that manages the polling buffer.
 class PollArray {
  public:
   PollArray();
@@ -25,6 +26,7 @@ class PollArray {
     friend class PollArray;
   };
 
+  // Iterator over elements that returned some events after |poll|.
   Iterator begin();
   Iterator end();
 

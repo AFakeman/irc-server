@@ -1,14 +1,15 @@
 #include "server_poll_socket.hpp"
 
-#include <system_error>
 #include <cstring>
 
 #include <arpa/inet.h>
 #include <poll.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include "base/error.hpp"
+#include "base/fd_stream_buffer.hpp"
 
 namespace network {
 
@@ -35,16 +36,20 @@ ServerPollSocket::ServerPollSocket(int port, int backlog,
 
 void ServerPollSocket::Poll() {
   poll_array_.Poll(-1);
+
+  // We can't modify the array while iterating over it
   bool should_accept = false;
   for (const auto &fd : poll_array_) {
     if (fd.fd == sockfd_) {
       should_accept = true;
     } else {
       if (fd.revents & POLLIN) {
-        delegate_->ProcessClientEvents(fd);
+        delegate_->ProcessClientEvents(fd.fd, fd.revents);
       }
       if (fd.revents & POLLHUP) {
         delegate_->ClientDisconnected(fd.fd);
+        client_buffers_.erase(fd.fd);
+        client_ids_.erase(fd.fd);
         close(fd.fd);
         poll_array_.Remove(fd.fd); 
       }
@@ -62,13 +67,25 @@ void ServerPollSocket::AcceptConnection() {
   if (client_fd < 0) {
     throw base::ErrnoExcept();
   }
-  clients_.insert(client_fd);
+  if (fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
+    throw base::ErrnoExcept();
+  }
+  client_buffers_.emplace(client_fd, new base::FdStreamBuffer(client_fd));
+  client_ids_.insert(client_fd);
   poll_array_.Insert(client_fd, POLLIN);
   delegate_->ClientConnected(client_fd, client_info);
 }
 
+const std::unordered_set<int>* ServerPollSocket::GetClients() const {
+  return &client_ids_;
+}
+
+std::streambuf* ServerPollSocket::GetClientBuffer(client_id client) {
+  return client_buffers_.at(client).get();
+}
+
 ServerPollSocket::~ServerPollSocket() {
-  for (int client : clients_) {
+  for (int client : client_ids_) {
     close(client);
   }
   close(sockfd_);

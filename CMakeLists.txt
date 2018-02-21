@@ -5,12 +5,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
-set(CMAKE_CXX_FLAGS "-g -std=c++14 -Wall -Werror")
+set(CMAKE_CXX_FLAGS "-g -std=gnu++14 -Wall -Werror -fsanitize=address,undefined")
 
 include_directories(".")
 
-add_library(base base/error.cpp)
-add_library(network network/poll_array.cpp network/server_poll_socket.cpp)
+add_subdirectory(base)
+add_subdirectory(network)
 
 add_executable(main main.cpp server.cpp) 
 
