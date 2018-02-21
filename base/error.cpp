@@ -3,7 +3,5 @@
 #include <cerrno>
 
 namespace base {
-  std::system_error ErrnoExcept() {
-    return {errno, std::system_category()}; 
-  }
-}
+std::system_error ErrnoExcept() { return {errno, std::system_category()}; }
+}  // namespace base

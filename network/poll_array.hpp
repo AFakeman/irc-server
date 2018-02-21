@@ -16,8 +16,9 @@ class PollArray {
     friend Iterator& operator++(Iterator& it);
     friend struct pollfd& operator*(Iterator& it);
     friend bool operator!=(const Iterator& lhs, const Iterator& rhs);
+
    private:
-    Iterator(size_t idx, std::vector<struct pollfd> &arr);
+    Iterator(size_t idx, std::vector<struct pollfd>& arr);
     // Moves to the closest element with non-empty revents
     // and idx not less than the current one.
     void GotoNextEmpty();
@@ -33,8 +34,9 @@ class PollArray {
   int Poll(int timeout);
   void Insert(int fd, short events);
   void Remove(int fd);
+
  private:
   std::vector<struct pollfd> fds_;
   std::stack<size_t> free_;
 };
-}
+}  // namespace network

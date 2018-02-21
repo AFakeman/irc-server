@@ -5,12 +5,12 @@ namespace network {
 PollArray::PollArray() = default;
 
 int PollArray::Poll(int timeout) {
-  return poll(fds_.data(), fds_.size(), timeout); 
+  return poll(fds_.data(), fds_.size(), timeout);
 }
 
 void PollArray::Insert(int fd, short events) {
   if (free_.empty()) {
-    fds_.emplace_back(pollfd{.fd=fd, .events=events});
+    fds_.emplace_back(pollfd{.fd = fd, .events = events});
   } else {
     size_t idx = free_.top();
     free_.pop();
@@ -30,33 +30,34 @@ void PollArray::Remove(int fd) {
 }
 
 PollArray::Iterator::Iterator(size_t idx, std::vector<struct pollfd>& arr)
-  : idx_(idx), arr_(arr) {
+    : idx_(idx), arr_(arr) {
   GotoNextEmpty();
 }
 
 void PollArray::Iterator::GotoNextEmpty() {
-  for (; idx_ < arr_.size() && (arr_[idx_].revents == 0 || arr_[idx_].fd == -1); ++idx_);
+  for (; idx_ < arr_.size() && (arr_[idx_].revents == 0 || arr_[idx_].fd == -1);
+       ++idx_)
+    ;
 }
 
-struct pollfd& operator*(PollArray::Iterator &it) {
+struct pollfd& operator*(PollArray::Iterator& it) {
   return it.arr_[it.idx_];
 }
 
-PollArray::Iterator& operator++(PollArray::Iterator &it) {
+PollArray::Iterator& operator++(PollArray::Iterator& it) {
   ++it.idx_;
   it.GotoNextEmpty();
   return it;
 }
 
-bool operator!=(const PollArray::Iterator& lhs, const PollArray::Iterator& rhs) {
+bool operator!=(const PollArray::Iterator& lhs,
+                const PollArray::Iterator& rhs) {
   return (lhs.idx_ != rhs.idx_) || (&lhs.arr_ != &rhs.arr_);
 }
 
-PollArray::Iterator PollArray::begin() {
-  return PollArray::Iterator(0, fds_);
-}
+PollArray::Iterator PollArray::begin() { return PollArray::Iterator(0, fds_); }
 
 PollArray::Iterator PollArray::end() {
   return PollArray::Iterator(fds_.size(), fds_);
 }
-}
+}  // namespace network

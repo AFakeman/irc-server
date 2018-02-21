@@ -5,8 +5,7 @@
 
 #include <arpa/inet.h>
 
-Server::Server()
-  : socket_(8080, 1, this) {}
+Server::Server() : socket_(8080, 1, this) {}
 
 Server::~Server() = default;
 
@@ -16,17 +15,18 @@ void Server::Run() {
   }
 }
 
-void Server::ProcessClientEvents(network::ServerPollSocket::client_id client, short flags) {
+void Server::ProcessClientEvents(network::ServerPollSocket::client_id client,
+                                 short flags) {
   if (flags & POLLIN) {
     std::string str;
-    std::streambuf* buffer = socket_.GetClientBuffer(client);
+    std::streambuf *buffer = socket_.GetClientBuffer(client);
     {
-      std::istream istream(buffer); 
-      while(str.size() < 2 || str[str.size() - 2] != '\r') {
+      std::istream istream(buffer);
+      while (str.size() < 2 || str[str.size() - 2] != '\r') {
         std::string tmpstr;
         std::getline(istream, tmpstr, '\n');
         if (tmpstr.empty()) {
-          str += "<EOF>"; 
+          str += "<EOF>";
           break;
         }
         str += tmpstr;
@@ -41,7 +41,8 @@ void Server::ProcessClientEvents(network::ServerPollSocket::client_id client, sh
   }
 }
 
-void Server::ClientConnected(network::ServerPollSocket::client_id client, const sockaddr_in& info) {
+void Server::ClientConnected(network::ServerPollSocket::client_id client,
+                             const sockaddr_in &info) {
   std::cout << "Client connected: " << inet_ntoa(info.sin_addr) << std::endl;
 }
 
