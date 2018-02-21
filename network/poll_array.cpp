@@ -35,7 +35,7 @@ PollArray::Iterator::Iterator(size_t idx, std::vector<struct pollfd>& arr)
 }
 
 void PollArray::Iterator::GotoNextEmpty() {
-  for (; idx_ < arr_.size() && arr_[idx_].revents == 0; ++idx_);
+  for (; idx_ < arr_.size() && (arr_[idx_].revents == 0 || arr_[idx_].fd == -1); ++idx_);
 }
 
 struct pollfd& operator*(PollArray::Iterator &it) {
