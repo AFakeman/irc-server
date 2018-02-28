@@ -5,7 +5,7 @@
 
 #include <arpa/inet.h>
 
-Server::Server() : socket_(8080, 1, this) {}
+Server::Server() : socket_(8080, 1, this), irc_controller_(new irc::IRCController) {}
 
 Server::~Server() = default;
 
@@ -26,14 +26,16 @@ void Server::ProcessClientEvents(network::ServerPollSocket::client_id client,
         std::string tmpstr;
         std::getline(istream, tmpstr, '\n');
         if (tmpstr.empty()) {
-          str += "<EOF>";
+          str += "<EOF>  ";
           break;
         }
         str += tmpstr;
         str += '\n';
       }
     }
+    str.resize(str.size() - 2);
     std::cout << str << std::endl;
+    irc_controller_->ProcessCommand(str);
     {
       std::ostream ostream(buffer);
       ostream << str << std::endl;

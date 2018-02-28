@@ -11,7 +11,8 @@ include_directories(".")
 
 add_subdirectory(base)
 add_subdirectory(network)
+add_subdirectory(irc)
 
 add_executable(main main.cpp server.cpp) 
 
-target_link_libraries(main base network)
+target_link_libraries(main base network irc)

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+
+#include "irc/irc_controller.hpp"
 #include "network/server_poll_socket.hpp"
 
 class Server : public network::ServerPollSocketDelegate {
@@ -19,4 +22,5 @@ class Server : public network::ServerPollSocketDelegate {
 
  private:
   network::ServerPollSocket socket_;
+  std::unique_ptr<irc::IRCController> irc_controller_;
 };
