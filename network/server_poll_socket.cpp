@@ -48,10 +48,7 @@ void ServerPollSocket::Poll() {
       }
       if (fd.revents & POLLHUP) {
         delegate_->ClientDisconnected(fd.fd);
-        client_buffers_.erase(fd.fd);
-        client_ids_.erase(fd.fd);
-        close(fd.fd);
-        poll_array_.Remove(fd.fd);
+        DropConnection(fd.fd);
       }
     }
   }
@@ -76,12 +73,23 @@ void ServerPollSocket::AcceptConnection() {
   delegate_->ClientConnected(client_fd, client_info);
 }
 
+void ServerPollSocket::DropConnection(int fd) {
+  client_buffers_.erase(fd);
+  client_ids_.erase(fd);
+  close(fd);
+  poll_array_.Remove(fd);
+}
+
 const std::unordered_set<int>* ServerPollSocket::GetClients() const {
   return &client_ids_;
 }
 
 std::streambuf* ServerPollSocket::GetClientBuffer(client_id client) {
   return client_buffers_.at(client).get();
+}
+
+void ServerPollSocket::DropClient(client_id client) {
+    DropConnection(client);
 }
 
 ServerPollSocket::~ServerPollSocket() {

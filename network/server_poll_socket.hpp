@@ -42,8 +42,12 @@ class ServerPollSocket {
   // Get the set of all clients.
   const std::unordered_set<int>* GetClients() const;
 
+  // Disconnect the client from the server.
+  void DropClient(client_id client);
  private:
   void AcceptConnection();
+
+  void DropConnection(int fd);
 
   ServerPollSocketDelegate* delegate_;
   int sockfd_;

@@ -6,7 +6,7 @@
 #include <cstring>
 
 namespace irc {
-  IRCController::IRCController() = default;
+  IRCController::IRCController(IRCControllerDelegate* delegate) : delegate_(delegate) {}
   IRCController::~IRCController() = default;
 
   struct IRCCommand {
@@ -51,8 +51,18 @@ namespace irc {
     return stream << ")";
   }
 
-  std::string IRCController::ProcessCommand(const std::string& command) {
+  client_id IRCController::ClientConnected() {
+    clients_.insert(free_client_id_);
+    return free_client_id_++;
+  }
+
+  void IRCController::ClientDisconnected(client_id client) {
+    clients_.erase(client);
+  }
+
+  void IRCController::ProcessCommand(client_id client, const std::string& command) {
     std::cout << IRCCommand(command) << std::endl;
-    return "";
+    delegate_->SendMessage(client, "DROPPED LUL");
+    delegate_->DropClient(client);
   }
 }
